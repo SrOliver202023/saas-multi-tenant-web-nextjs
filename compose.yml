@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:18.0
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=saas
+    ports:
+      - "8054:5432"
+    volumes:
+      - saas_pg_data:/var/lib/postgresql/data
+
+volumes:
+  saas_pg_data:
+    driver: local
