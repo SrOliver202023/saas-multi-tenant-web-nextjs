@@ -8,14 +8,14 @@ interface AuthRefreshProps {
   };
   user: {
     userId: string;
-    accountId: string;
+    accountId?: string;
     name: string;
     email: string;
   };
 }
 
 type IAuthRefreshPresenterRaw = {
-  account: Account;
+  account?: Account;
   user: User;
   credentials: {
     accessToken: string;
@@ -34,9 +34,9 @@ export class AuthRefreshPresenter {
       },
       user: {
         userId: raw.user.userId,
-        accountId: raw.account.accountId,
         name: raw.user.name,
         email: raw.user.email,
+        accountId: raw.account?.accountId,
       },
     };
   }
