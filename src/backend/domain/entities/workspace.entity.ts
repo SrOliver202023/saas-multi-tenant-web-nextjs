@@ -10,7 +10,7 @@ export interface IWorkspaceProps extends IEntityProps {
 
 export class Workspace extends Entity<IWorkspaceProps> {
   get workspaceId(): string {
-    return this.workspaceId;
+    return this.props.workspaceId;
   }
 
   set workspaceId(value: string) {

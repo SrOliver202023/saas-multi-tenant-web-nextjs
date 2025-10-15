@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum WorkspaceRole {
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model Account {
+  accountId    String     @id @default(uuid()) @db.Uuid @map("account_id")
+  email        String     @unique @map("email")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  deletedAt    DateTime?  @map("deleted_at")
+
+  // Relações
+  // workspaces        Workspace[]          @relation("account_workspaces") // Workspaces criados por esta conta
+  managedUsers      User[]               @relation("account_manages_users") // Usuários gerenciados por esta conta
+
+  // Chave estrangeira opcional (1:1 com o usuário que é dono desta conta)
+  ownerUserId String? @db.Uuid @map("owner_user_id") @unique
+  ownerUser         User?                @relation("user_owns_account", fields: [ownerUserId], references: [userId])
+
+  @@index([createdAt])
+  @@map("account")
+}
+model User {
+  userId     String    @id @default(uuid()) @db.Uuid @map("user_id")
+  username   String    @unique @map("username")
+  name       String    @map("name")
+  password   String    @map("password")
+  email      String    @unique @map("email")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  // Conta que gerencia este usuário (1:N)
+  managerAccountId String?  @db.Uuid @map("manager_account_id")
+  managerAccount   Account? @relation("account_manages_users", fields: [managerAccountId], references: [accountId])
+
+  // Conta de propriedade deste usuário (1:1)
+  ownedAccountId String? @unique @db.Uuid @map("user_owns_account")
+  ownedAccount Account? @relation("user_owns_account")
+
+  // Relações com workspaces
+  // workspaceMemberships    WorkspaceMember[] @relation("workspace_member")
+  // invitedWorkspaceMembers WorkspaceMember[] @relation("workspace_member_invited_by")
+
+  @@index([createdAt])
+  @@map("user")
+}
+
+
+// model Workspace {
+//   workspaceId          String    @id @default(uuid()) @db.Uuid @map("workspace_id")
+//   workspaceName        String    @map("workspace_name")
+//   workspaceDescription String?   @map("workspace_description")
+//   createdAt            DateTime  @default(now()) @map("created_at")
+//   updatedAt            DateTime  @updatedAt @map("updated_at")
+//   deletedAt            DateTime? @map("deleted_at")
+
+//   // Relação com a conta proprietária
+//   accountId String   @db.Uuid @map("account_id")
+//   account   Account  @relation("account_workspaces", fields: [accountId], references: [accountId])
+
+//   // Membros deste workspace
+//   // members   WorkspaceMember[]
+
+//   @@unique([accountId, workspaceName], name: "unique_account_workspace_name")
+//   @@index([accountId])
+//   @@map("workspace")
+// }
+
+
+// model WorkspaceMember {
+//   userId        String       @db.Uuid @map("user_id")
+//   workspaceId   String       @db.Uuid @map("workspace_id")
+//   role          WorkspaceRole
+
+//   member        User         @relation("workspace_member", fields: [userId], references: [userId], onDelete: Cascade)
+//   workspace     Workspace    @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
+
+//   invitedByUserId String?    @db.Uuid @map("invited_by_user_id")
+//   invitedBy       User?      @relation("workspace_member_invited_by", fields: [invitedByUserId], references: [userId])
+
+//   createdAt     DateTime     @default(now()) @map("created_at")
+//   updatedAt     DateTime     @updatedAt @map("updated_at")
+//   deletedAt     DateTime?    @map("deleted_at")
+
+//   @@id([userId, workspaceId])
+//   @@index([workspaceId, role])
+//   @@map("workspace_member")
+// }

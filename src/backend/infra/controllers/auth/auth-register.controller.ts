@@ -1,6 +1,6 @@
+import { HttpValidation } from "@/backend/core/entities";
 import { HttpResponse } from "@/backend/core/types";
 import { AuthRegisterUseCase } from "@/backend/domain/use-cases";
-import { AuthRegisterValidation } from "@/backend/domain/validations";
 import { Logger } from "@/shared";
 import { bodyParse } from "@/utils";
 import { AuthRegisterPresenter, handleControllerErrorResponse } from "../../presenters";
@@ -15,7 +15,7 @@ interface AuthRegisterRequest {
 export class AuthRegisterController {
   private readonly logger = Logger.withContext(AuthRegisterController.name);
 
-  constructor(private readonly authRegisterUseCase: AuthRegisterUseCase, private readonly createAccountValidation: AuthRegisterValidation) {}
+  constructor(private readonly authRegisterUseCase: AuthRegisterUseCase, private readonly createAccountValidation: HttpValidation<AuthRegisterRequest>) {}
 
   async handle(req: Request): Promise<HttpResponse> {
     const body: AuthRegisterRequest = await bodyParse(req, this.logger);

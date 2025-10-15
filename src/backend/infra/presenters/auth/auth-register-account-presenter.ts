@@ -1,4 +1,4 @@
-import { Account } from "@/backend/domain/entities";
+import { Account, User } from "@/backend/domain/entities";
 
 interface AuthRegisterProps {
   accountId: string;
@@ -8,12 +8,12 @@ interface AuthRegisterProps {
 }
 
 export class AuthRegisterPresenter {
-  static toHttp(raw: Account): AuthRegisterProps {
+  static toHttp(raw: { account: Account; user: User }): AuthRegisterProps {
     return {
-      accountId: raw.accountId,
-      createdAt: raw.createdAt,
-      email: raw.email,
-      name: raw.name,
+      accountId: raw.account.accountId,
+      createdAt: raw.account.createdAt,
+      email: raw.user.email,
+      name: raw.user.name,
     };
   }
 }

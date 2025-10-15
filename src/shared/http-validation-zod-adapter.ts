@@ -9,7 +9,6 @@ export class HttpValidationZodAdapter {
         schema.parse(payload);
         return right(true);
       } catch (error) {
-        console.log("zod_error", error);
         if (error instanceof z.ZodError) {
           return left(new HttpError(error.issues[0].message, 400));
         }

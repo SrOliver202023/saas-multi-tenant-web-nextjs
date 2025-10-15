@@ -6,8 +6,7 @@ export class AccountPrismaMapper {
     return {
       accountId: raw.accountId,
       email: raw.email,
-      name: raw.name,
-      password: raw.password,
+      ownerUserId: raw.ownerUserId,
     };
   }
 
@@ -15,8 +14,7 @@ export class AccountPrismaMapper {
     return Account.create(
       {
         email: raw.email,
-        name: raw.name,
-        password: raw.password,
+        ownerUserId: raw.ownerUserId ?? undefined,
       },
       raw.accountId
     );

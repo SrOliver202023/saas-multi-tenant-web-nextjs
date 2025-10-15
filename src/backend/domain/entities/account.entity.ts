@@ -2,9 +2,8 @@ import { Entity, UniqueEntityID, type IEntityProps } from "@/backend/core/entiti
 
 export interface IAccountProps extends IEntityProps {
   accountId: string;
-  name: string;
   email: string;
-  password: string;
+  ownerUserId?: string;
 }
 
 export class Account extends Entity<IAccountProps> {
@@ -16,14 +15,6 @@ export class Account extends Entity<IAccountProps> {
     this.props.accountId = value;
   }
 
-  get name(): string {
-    return this.props.name;
-  }
-
-  set name(value: string) {
-    this.props.name = value;
-  }
-
   get email(): string {
     return this.props.email;
   }
@@ -32,12 +23,12 @@ export class Account extends Entity<IAccountProps> {
     this.props.email = value;
   }
 
-  get password(): string {
-    return this.props.password;
+  get ownerUserId(): string | undefined {
+    return this.props.ownerUserId;
   }
 
-  set password(value: string) {
-    this.props.password = value;
+  set ownerUserId(value: string) {
+    this.props.ownerUserId = value;
   }
 
   public static create(props: Omit<IAccountProps, "accountId">, accountId?: string) {
