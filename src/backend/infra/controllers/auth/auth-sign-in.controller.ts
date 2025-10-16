@@ -15,7 +15,7 @@ export class AuthSignInController {
 
   constructor(private readonly authSignInUseCase: AuthSignInUseCase, private readonly authSignInValidation: HttpValidation<AuthSignInRequest>) {}
 
-  async handle(req: Request): Promise<HttpResponse> {
+  async handle(req: Request): Promise<Response> {
     const body: AuthSignInRequest = await bodyParse(req, this.logger);
 
     const validationResult = this.authSignInValidation.validate(body);

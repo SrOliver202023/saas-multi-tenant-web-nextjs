@@ -14,7 +14,7 @@ export class AuthRefreshController {
 
   constructor(private readonly authRefreshUseCase: AuthRefreshUseCase, private readonly authRefreshValidation: HttpValidation<AuthRefreshRequest>) {}
 
-  async handle(req: Request): Promise<HttpResponse> {
+  async handle(req: Request): Promise<Response> {
     const body: AuthRefreshRequest = await bodyParse(req, this.logger);
 
     const validationResult = this.authRefreshValidation.validate(body);

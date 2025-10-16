@@ -17,7 +17,7 @@ export class AuthRegisterController {
 
   constructor(private readonly authRegisterUseCase: AuthRegisterUseCase, private readonly createAccountValidation: HttpValidation<AuthRegisterRequest>) {}
 
-  async handle(req: Request): Promise<HttpResponse> {
+  async handle(req: Request): Promise<Response> {
     const body: AuthRegisterRequest = await bodyParse(req, this.logger);
 
     const validationResult = this.createAccountValidation.validate(body);

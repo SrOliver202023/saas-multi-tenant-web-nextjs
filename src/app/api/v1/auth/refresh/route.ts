@@ -1,9 +1,9 @@
 import { AuthRefreshController } from "@/backend/infra/controllers";
 import { AuthRefreshUseCaseFactory } from "@/backend/infra/factories";
-import { AuthRefreshZodValidation } from "@/shared";
-import { NextResponse } from "next/server";
+import { AuthRefreshZodValidation, HttpNextAdapter } from "@/shared";
 
 export async function POST(req: Request) {
   const useCase = AuthRefreshUseCaseFactory.make();
-  return NextResponse.json(new AuthRefreshController(useCase, AuthRefreshZodValidation).handle(req));
+  const response = await new AuthRefreshController(useCase, AuthRefreshZodValidation).handle(req);
+  return HttpNextAdapter.from(response);
 }
