@@ -9,7 +9,16 @@ services:
       - "8054:5432"
     volumes:
       - saas_pg_data:/var/lib/postgresql/data
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - saas_redis_data:/data
 
 volumes:
   saas_pg_data:
+    driver: local
+
+  saas_redis_data:
     driver: local
