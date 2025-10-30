@@ -1,17 +1,18 @@
 import { Account, User } from "@/backend/domain/entities";
 
-interface AuthSignInProps {
+export interface IAuthenticationProps {
   credentials: {
     accessToken: string;
     refreshToken: string;
     expiresIn: number;
   };
-  info: {
+  user: {
     userId: string;
-    accountId?: string;
+    username: string;
     name: string;
     email: string;
-    username: string;
+    managerAccountId?: string;
+    ownerAccountId?: string;
   };
 }
 
@@ -26,19 +27,20 @@ type IAuthSignInPresenterRaw = {
 };
 
 export class AuthSignInPresenter {
-  static toHttp(raw: IAuthSignInPresenterRaw): AuthSignInProps {
+  static toHttp(raw: IAuthSignInPresenterRaw): IAuthenticationProps {
     return {
       credentials: {
         accessToken: raw.credentials.accessToken,
         refreshToken: raw.credentials.refreshToken,
         expiresIn: raw.credentials.expiresIn,
       },
-      info: {
-        accountId: raw.user?.ownedAccountId,
+      user: {
         userId: raw.user.userId,
         email: raw.user.email,
-        username: raw.user.username,
         name: raw.user?.name,
+        username: raw.user.username,
+        managerAccountId: raw.user.managerAccountId,
+        ownerAccountId: raw.user.ownedAccountId,
       },
     };
   }

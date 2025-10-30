@@ -31,8 +31,10 @@ export function TouchButton(props: TouchButtonProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const fill = useColorModeValue(props.fillColor ?? "primary", props.darkFillColor ?? props.fillColor ?? "primary");
+  const fill = useColorModeValue(props.fillColor ?? "primary.600", props.darkFillColor ?? props.fillColor ?? "primary.600");
+
   const hoverText = useColorModeValue(props.textHoverColor ?? "white", props.darkTextHoverColor ?? props.textHoverColor ?? "white");
+
   const normalText = useColorModeValue(props.textColor ?? fill, props.darkTextColor ?? props.textColor ?? fill);
 
   if (!mounted) {
@@ -44,17 +46,27 @@ export function TouchButton(props: TouchButtonProps) {
   }
 
   const hoverFilled = props.hoverFilled ?? "fromLeft";
+  const isBack = hoverFilled.startsWith("back");
   const shouldAnimate = hoverFilled !== "none";
 
-  const initialTransform = hoverFilled.startsWith("back") ? "scale(1)" : hoverFilled === "fromTop" || hoverFilled === "fromBottom" ? "scaleY(0)" : "scaleX(0)";
+  // define transformações
+  const initialTransform =
+    hoverFilled === "fromTop" || hoverFilled === "fromBottom" || hoverFilled.includes("backFromTop") || hoverFilled.includes("backFromBottom")
+      ? isBack
+        ? "scaleY(1)"
+        : "scaleY(0)"
+      : isBack
+      ? "scaleX(1)"
+      : "scaleX(0)";
 
-  const hoverTransform = hoverFilled.startsWith("back")
-    ? hoverFilled.includes("Top") || hoverFilled.includes("Bottom")
-      ? "scaleY(0)"
-      : "scaleX(0)"
-    : hoverFilled === "fromTop" || hoverFilled === "fromBottom"
-    ? "scaleY(1)"
-    : "scaleX(1)";
+  const hoverTransform =
+    hoverFilled === "fromTop" || hoverFilled === "fromBottom" || hoverFilled.includes("backFromTop") || hoverFilled.includes("backFromBottom")
+      ? isBack
+        ? "scaleY(0)"
+        : "scaleY(1)"
+      : isBack
+      ? "scaleX(0)"
+      : "scaleX(1)";
 
   const transformOrigin = hoverFilled.includes("Left")
     ? "left"
@@ -66,18 +78,22 @@ export function TouchButton(props: TouchButtonProps) {
     ? "bottom"
     : "center";
 
+  // 🧠 aqui está a mágica da inversão de cores
+  const currentTextColor = isBack ? hoverText : normalText;
+  const currentHoverColor = isBack ? normalText : hoverText;
+
   return (
-    <Ripple asChild>
+    <Ripple color={fill}>
       <Button
         {...props}
         position="relative"
         overflow="hidden"
         border="2px solid"
         borderColor={fill}
-        color={normalText}
+        color={currentTextColor}
         fontWeight="bold"
-        bg="transparent"
-        transition="color 0.3s ease"
+        bg={isBack ? fill : "transparent"}
+        transition="color 0.3s ease, background-color 0.3s ease"
         _before={{
           content: '""',
           position: "absolute",
@@ -86,10 +102,11 @@ export function TouchButton(props: TouchButtonProps) {
           transform: shouldAnimate ? initialTransform : undefined,
           transformOrigin: shouldAnimate ? transformOrigin : undefined,
           transition: shouldAnimate ? "transform 0.3s ease" : undefined,
-          zIndex: -1, // 👈 fica atrás do conteúdo
+          zIndex: -1,
         }}
         _hover={{
-          color: hoverText,
+          color: currentHoverColor,
+          bg: isBack ? "transparent" : undefined,
           _before: shouldAnimate ? { transform: hoverTransform } : undefined,
         }}
       >

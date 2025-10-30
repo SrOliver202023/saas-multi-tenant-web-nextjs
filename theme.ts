@@ -11,7 +11,8 @@ const config = defineConfig({
           500: { value: "#EE0F0F" },
         },
         primary: {
-          50: { value: "klch(0.977 0.013 236.62)" },
+          DEFAULT: { value: "oklch(0.391 0.09 240.876)" },
+          50: { value: "oklch(0.977 0.013 236.62)" },
           100: { value: "oklch(0.951 0.026 236.824)" },
           200: { value: "oklch(0.901 0.058 230.902)" },
           300: { value: "oklch(0.828 0.111 230.318)" },
@@ -24,16 +25,29 @@ const config = defineConfig({
           950: { value: "oklch(0.293 0.066 243.157)" },
         },
         light: {
-          background: { value: "#ffe5f8" },
+          background: { value: "#f8f9fa" },
+          foreground: { value: "#1a1a1a" },
+        },
+        dark: {
+          background: { value: "#0f1115" },
+          foreground: { value: "#f1f1f1" },
         },
       },
     },
     semanticTokens: {
       colors: {
-        bg: { value: "{colors.bg}" },
-        fg: { value: "{colors.white}" },
-        primary: { value: "{colors.primary.500}" },
-        danger: { value: "{colors.red.500}" },
+        bg: {
+          value: { base: "{colors.light.background}", _dark: "{colors.dark.background}" },
+        },
+        fg: {
+          value: { base: "{colors.light.foreground}", _dark: "{colors.dark.foreground}" },
+        },
+        primary: {
+          value: { base: "{colors.primary.500}", _dark: "{colors.primary.300}" },
+        },
+        danger: {
+          value: { base: "{colors.red.500}", _dark: "{colors.red.100}" },
+        },
       },
     },
   },

@@ -1,18 +1,5 @@
 import { Account, User } from "@/backend/domain/entities";
-
-interface AuthRefreshProps {
-  credentials: {
-    accessToken: string;
-    refreshToken: string;
-    expiresIn: number;
-  };
-  user: {
-    userId: string;
-    accountId?: string;
-    name: string;
-    email: string;
-  };
-}
+import { IAuthenticationProps } from "./auth-sign-in-account-presenter";
 
 type IAuthRefreshPresenterRaw = {
   account?: Account;
@@ -25,18 +12,20 @@ type IAuthRefreshPresenterRaw = {
 };
 
 export class AuthRefreshPresenter {
-  static toHttp(raw: IAuthRefreshPresenterRaw): AuthRefreshProps {
+  static toHttp(raw: IAuthRefreshPresenterRaw): IAuthenticationProps {
     return {
       credentials: {
         accessToken: raw.credentials.accessToken,
-        expiresIn: raw.credentials.expiresIn,
         refreshToken: raw.credentials.refreshToken,
+        expiresIn: raw.credentials.expiresIn,
       },
       user: {
         userId: raw.user.userId,
-        name: raw.user.name,
         email: raw.user.email,
-        accountId: raw.account?.accountId,
+        name: raw.user?.name,
+        username: raw.user.username,
+        managerAccountId: raw.user.managerAccountId,
+        ownerAccountId: raw.user.ownedAccountId,
       },
     };
   }
