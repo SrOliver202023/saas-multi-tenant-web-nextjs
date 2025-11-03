@@ -1,10 +1,10 @@
 import { Either, left, right } from "@/backend/core";
 import { HttpValidation } from "@/backend/core/entities";
-import { IAuthRegisterDto } from "../../dtos";
+import { IAuthSignUpDto } from "../../dtos";
 import { EmailIsRequiredAccountError, NameIsRequiredAccountError, PasswordIsRequiredAccountError, PasswordsMustBeTheSameAccountError } from "../../errors";
 
-export class AuthRegisterValidation implements HttpValidation<IAuthRegisterDto> {
-  validate(payload: IAuthRegisterDto): Either<Error, boolean> {
+export class AuthSignUpValidation implements HttpValidation<IAuthSignUpDto> {
+  validate(payload: IAuthSignUpDto): Either<Error, boolean> {
     if (payload) {
       if (!payload.name) {
         return left(new NameIsRequiredAccountError());

@@ -1,5 +1,5 @@
 import { Either } from "@/backend/core";
-import { IAuthRegisterDto } from "@/backend/domain/dtos";
+import { IAuthSignUpDto } from "@/backend/domain/dtos";
 import { HttpValidationZodAdapter } from "@/shared/http-validation-zod-adapter";
 import { z } from "zod";
 
@@ -23,7 +23,7 @@ const validationMessages = {
   },
 };
 
-export const createAccountValidation = z
+export const authSignUpValidation = z
   .object({
     name: z
       .string({ error: validationMessages.name.required })
@@ -38,8 +38,8 @@ export const createAccountValidation = z
     path: ["confirmPassword"],
   });
 
-export class AuthRegisterZodValidation {
-  static validate(payload: IAuthRegisterDto): Either<Error, boolean> {
-    return HttpValidationZodAdapter.makeValidation(createAccountValidation)(payload);
+export class AuthSignUpZodValidation {
+  static validate(payload: IAuthSignUpDto): Either<Error, boolean> {
+    return HttpValidationZodAdapter.makeValidation(authSignUpValidation)(payload);
   }
 }

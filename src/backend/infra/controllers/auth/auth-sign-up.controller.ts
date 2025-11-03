@@ -1,24 +1,24 @@
 import { HttpValidation } from "@/backend/core/entities";
 import { HttpResponse } from "@/backend/core/types";
-import { AuthRegisterUseCase } from "@/backend/domain/use-cases";
 import { Logger } from "@/shared";
 import { bodyParse } from "@/utils";
-import { AuthRegisterPresenter, handleControllerErrorResponse } from "../../presenters";
+import { AuthSignUpPresenter, handleControllerErrorResponse } from "../../presenters";
+import { AuthSignUpUseCase } from "@/backend/domain/use-cases";
 
-interface AuthRegisterRequest {
+interface AuthSignUpRequest {
   name: string;
   email: string;
   password: string;
   confirmPassword: string;
 }
 
-export class AuthRegisterController {
-  private readonly logger = Logger.withContext(AuthRegisterController.name);
+export class AuthSignUpController {
+  private readonly logger = Logger.withContext(AuthSignUpController.name);
 
-  constructor(private readonly authRegisterUseCase: AuthRegisterUseCase, private readonly createAccountValidation: HttpValidation<AuthRegisterRequest>) {}
+  constructor(private readonly authSignUpUseCase: AuthSignUpUseCase, private readonly createAccountValidation: HttpValidation<AuthSignUpRequest>) {}
 
   async handle(req: Request): Promise<Response> {
-    const body: AuthRegisterRequest = await bodyParse(req, this.logger);
+    const body: AuthSignUpRequest = await bodyParse(req, this.logger);
 
     const validationResult = this.createAccountValidation.validate(body);
 
@@ -29,7 +29,7 @@ export class AuthRegisterController {
       });
     }
 
-    const useCaseResult = await this.authRegisterUseCase.execute(body);
+    const useCaseResult = await this.authSignUpUseCase.execute(body);
 
     if (useCaseResult.isLeft()) {
       return handleControllerErrorResponse({
@@ -41,7 +41,7 @@ export class AuthRegisterController {
     return HttpResponse.success({
       message: "Registered successfully",
       statusCode: 200,
-      data: AuthRegisterPresenter.toHttp(useCaseResult.value),
+      data: AuthSignUpPresenter.toHttp(useCaseResult.value),
     });
   }
 }

@@ -11,10 +11,10 @@ import { Options, passwordStrength } from "check-password-strength";
 import { useMemo } from "react";
 import { ColorModeButton } from "@/components/ui/color-mode";
 import NextLink from "next/link";
-import { createAccountValidation } from "@/shared/validations";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IAuthRegisterDto } from "@/backend/domain/dtos";
+import { IAuthSignUpDto } from "@/backend/domain/dtos";
+import { authSignUpValidation } from "@/shared";
 
 const strengthOptions: Options<string> = [
   { id: 1, value: "weak", minDiversity: 0, minLength: 0 },
@@ -25,11 +25,12 @@ const strengthOptions: Options<string> = [
 
 export interface SignUpFormProps {
   isLoading: boolean;
-  onSubmit: (data: IAuthRegisterDto) => void;
+  onSubmit: (data: IAuthSignUpDto) => void;
+  onGoogleSignUp: () => void;
 }
-export function SignUpForm({ onSubmit }: SignUpFormProps) {
+export function SignUpForm({ onSubmit, onGoogleSignUp }: SignUpFormProps) {
   const form = useForm({
-    resolver: zodResolver(createAccountValidation),
+    resolver: zodResolver(authSignUpValidation),
     defaultValues: {
       confirmPassword: "",
       email: "",
@@ -153,7 +154,7 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
                 <Flex h="0.5" w="full" bg="gray.200" />
               </Flex>
 
-              <TouchButton w="full" hoverFilled="fromLeft" justifyContent="space-between" disabled>
+              <TouchButton w="full" hoverFilled="fromLeft" justifyContent="space-between" onClick={onGoogleSignUp}>
                 <Separator />
                 <Text fontWeight="normal" fontSize="md">
                   Sign Up with Google

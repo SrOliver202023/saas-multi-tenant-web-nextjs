@@ -1,9 +1,8 @@
 import type { NextAuthOptions, User, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { AuthService } from "@/infra/services/core";
-import { setAuthCookies } from "./token.utils";
-import GoogleProvider from "next-auth/providers/google"; // ✅ novo import
 
 /* ----------------------------------------
    Tipos vindos do backend
@@ -21,6 +20,7 @@ export interface BackendCredentials {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
+  expiresAt?: number; // 👈 este campo existe no tipo esperado
 }
 
 interface BackendSignInResponse {
@@ -34,11 +34,15 @@ interface BackendSignInResponse {
 interface ExtendedJWT extends JWT {
   user?: BackendUser;
   credentials?: BackendCredentials & { expiresAt: number };
+  mode?: "signIn" | "signUp";
+  error?: string;
 }
 
 interface ExtendedSession extends Session {
   user?: BackendUser;
   credentials?: BackendCredentials;
+  mode?: "signIn" | "signUp";
+  error?: string;
 }
 
 /* ----------------------------------------
@@ -46,13 +50,20 @@ interface ExtendedSession extends Session {
 ---------------------------------------- */
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
-  debug: process.env.NODE_ENV === "development",
 
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
+
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -61,8 +72,6 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials): Promise<User | null> {
-        console.log("🟡 [authorize] Tentando login com:", credentials);
-
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Missing email or password");
         }
@@ -74,17 +83,12 @@ export const authOptions: NextAuthOptions = {
             password: credentials.password,
           });
 
-          console.log("🟢 [authorize] Resposta da API:", response);
-
           const data = response?.data as BackendSignInResponse | undefined;
+
           if (!data?.user || !data?.credentials?.accessToken) {
-            console.error("❌ [authorize] Dados inválidos:", data);
             return null;
           }
 
-          console.log("✅ [authorize] Login bem-sucedido:", data.user);
-
-          // Retorna o usuário + tokens para o callback `jwt`
           return {
             id: data.user.userId,
             name: data.user.name,
@@ -94,9 +98,8 @@ export const authOptions: NextAuthOptions = {
             refreshToken: data.credentials.refreshToken,
             expiresIn: data.credentials.expiresIn,
           } as unknown as User;
-        } catch (err) {
-          console.error("🔥 [authorize] Erro no login:", err);
-          throw new Error("Login failed");
+        } catch {
+          return null;
         }
       },
     }),
@@ -106,91 +109,44 @@ export const authOptions: NextAuthOptions = {
     /* ------------------------------
        JWT Callback
     ------------------------------ */
-    async jwt({ token, user, account, profile }): Promise<JWT> {
-      // 🔹 LOGIN VIA GOOGLE
+    async jwt({ token, account, profile }) {
+      const authService = new AuthService();
+
       if (account?.provider === "google" && profile?.email) {
         try {
+          await authService.signUpWithGoogle({
+            email: profile.email,
+            name: profile.name ?? "",
+            googleId: profile.sub ?? "",
+          });
+
           const response = await authService.signInWithGoogle({
             email: profile.email,
-            name: profile.name || "",
-            googleId: profile.sub,
+            name: profile.name ?? "",
+            googleId: profile.sub ?? "",
           });
 
           const data = response.data;
-
-          token.user = {
-            userId: data.user.userId,
-            name: data.user.name,
-            email: data.user.email,
-          };
+          (token as ExtendedJWT).user = data.user;
 
           token.credentials = {
             accessToken: data.credentials.accessToken,
             refreshToken: data.credentials.refreshToken,
-            expiresIn: Date.now() + data.credentials.expiresIn * 1000,
+            expiresIn: data.credentials.expiresIn,
+            expiresAt: Date.now() + data.credentials.expiresIn * 1000, // ✅ novo campo
           };
-        } catch (error) {
-          console.error("Erro ao autenticar com Google:", error);
+        } catch (error: unknown) {
+          const err = error as { response?: { status?: number } };
+          if (err.response?.status === 409) {
+            (token as ExtendedJWT).error = "Usuário já cadastrado com este Google.";
+          } else {
+            (token as ExtendedJWT).error = "Falha ao autenticar com o Google.";
+          }
         }
       }
 
-      const t = token as ExtendedJWT;
-
-      // Primeiro login: user vem do authorize()
-      if (user) {
-        const u = user as User & {
-          username?: string;
-          accessToken?: string;
-          refreshToken?: string;
-          expiresIn?: number;
-        };
-
-        t.user = {
-          userId: u.id,
-          name: u.name ?? "",
-          email: u.email ?? "",
-          username: u.username ?? "",
-        };
-
-        if (u.accessToken) {
-          t.credentials = {
-            accessToken: u.accessToken,
-            refreshToken: u.refreshToken ?? "",
-            expiresIn: u.expiresIn ?? 3600,
-            expiresAt: Date.now() + (u.expiresIn ?? 3600) * 1000,
-          };
-        }
-
-        console.log("✅ [jwt] Token inicial criado:", t);
-      }
-
-      // Atualiza token se expirado
-      if (t.credentials?.expiresAt && Date.now() > t.credentials.expiresAt) {
-        console.warn("🔁 [jwt] Token expirado, tentando refresh...");
-
-        try {
-          const authService = new AuthService();
-          const res = await authService.refreshToken({
-            refreshToken: t.credentials.refreshToken,
-          });
-
-          const creds = res.data.credentials as BackendCredentials;
-          t.credentials = {
-            ...creds,
-            expiresAt: Date.now() + creds.expiresIn * 1000,
-          };
-
-          console.log("✅ [jwt] Token renovado com sucesso:", t.credentials);
-          await setAuthCookies(creds.accessToken, creds.refreshToken, creds.expiresIn);
-        } catch (err) {
-          console.error("❌ [jwt] Falha ao atualizar token:", err);
-          t.credentials = undefined;
-        }
-      }
-
-      return t as JWT;
+      return token;
     },
-
     /* ------------------------------
        Session Callback
     ------------------------------ */
@@ -201,15 +157,37 @@ export const authOptions: NextAuthOptions = {
         ...session,
         user: extToken.user,
         credentials: extToken.credentials,
+        mode: extToken.mode,
+        error: extToken.error,
       };
     },
 
     /* ------------------------------
        Redirect Callback
     ------------------------------ */
-    async redirect({ baseUrl }) {
-      console.log("➡️ [redirect] Redirecionando para /inicio");
-      return `${baseUrl}/inicio`;
+    async redirect({ baseUrl, url }) {
+      // Se o redirecionamento já vai pra uma rota interna válida, deixa passar
+      if (url.startsWith("/")) {
+        const target = new URL(url, baseUrl);
+
+        // Evita redirecionar para /api/auth/callback/google (loop)
+        if (target.pathname.startsWith("/api/auth/")) return `${baseUrl}/home`;
+
+        // Evita redirecionar para /login (loop caso já autenticado)
+        if (target.pathname === "/login") return `${baseUrl}/home`;
+
+        return target.toString();
+      }
+
+      // Se tiver erro, manda para login
+      if (url.includes("error=")) {
+        const parsed = new URL(url);
+        const err = parsed.searchParams.get("error");
+        return `${baseUrl}/login?error=${encodeURIComponent(err ?? "")}`;
+      }
+
+      // Redirecionamento padrão
+      return `${baseUrl}/home`;
     },
   },
 

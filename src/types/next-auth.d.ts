@@ -5,6 +5,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user?: BackendUser;
     credentials?: BackendCredentials;
+    tudocerto: boolean;
   }
 
   interface User extends BackendUser, BackendCredentials {}

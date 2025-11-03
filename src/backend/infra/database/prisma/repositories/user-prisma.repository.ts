@@ -7,8 +7,6 @@ export class UserPrismaRepository implements IUserRepository {
   constructor(private readonly prisma: typeof PrismaService) {}
 
   public async findByEmail(email: string): Promise<User | null> {
-    console.log("findByEmail_email", email);
-
     const found = await this.prisma.user.findUnique({
       where: {
         email,

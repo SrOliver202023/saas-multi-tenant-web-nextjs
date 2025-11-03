@@ -123,8 +123,25 @@ function emit(level: "debug" | "info" | "warn" | "error", message: string, optio
     ...(level === "error" && "error" in (options ?? {}) ? { error: (options as { error?: unknown }).error } : {}),
     timestamp: new Date().toISOString(),
   };
-
-  console.log(payload);
+  if (process.env.NODE_ENV !== "production") {
+    switch (level) {
+      case "debug":
+        console.debug(payload);
+        break;
+      case "info":
+        console.info(payload);
+        break;
+      case "warn":
+        console.warn(payload);
+        break;
+      case "error":
+        console.error(payload);
+        break;
+      default:
+        console.log(payload);
+        break;
+    }
+  }
 }
 
 export class Logger {

@@ -50,14 +50,15 @@ model User {
 }
 
 model ExternalAuth {
-  id             String    @id @default(cuid())
-  provider       String // "google", "github", "microsoft", etc.
-  providerUserId String // ID do usuário no provedor (sub do Google)
-  accessToken    String?
-  refreshToken   String?
-  expiresAt      DateTime?
-  userId         String    @db.Uuid
-  user           User      @relation(fields: [userId], references: [userId], name: "external_auth_user")
+  externalAuthId String    @id @default(cuid()) @map("external_auth_id")
+  provider       String    @map("provider")
+  providerUserId String    @map("provider_user_id")
+  accessToken    String?   @map("access_token")
+  refreshToken   String?   @map("refresh_token")
+  expiresAt      DateTime? @map("expires_at")
+  userId         String    @map("user_id") @db.Uuid
+  user           User      @relation(fields: [userId], references: [userId], name: "external_auth_user", map: "external_auth_user")
 
-  @@unique([provider, providerUserId]) // evita duplicação
+  @@unique([provider, providerUserId], name: "uniqueProviderWithProviderUserId", map: "unique_provider_with_provider_user_id")
+  @@map("external_auth")
 }

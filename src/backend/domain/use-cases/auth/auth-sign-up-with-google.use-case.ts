@@ -1,27 +1,38 @@
 import { Either, left, right } from "@/backend/core/either";
 import { HashGenerator } from "../../cryptography";
-import { Account, User } from "../../entities";
-import { EmailAlreadyExistsAuthRegisterError } from "../../errors";
-import { IAccountRepository, IUserRepository } from "../../repositories";
+import { Account, ExternalAuth, User } from "../../entities";
+import { EmailAlreadyExistsAuthRegisterError, PasswordsMustBeTheSameAccountError } from "../../errors";
+import { IAccountRepository, IExternalAuthRepository, IUserRepository } from "../../repositories";
 
-interface IRequestAuthRegister {
+interface IRequestAuthSignUpWihGoogle {
   name: string;
   email: string;
-  password: string;
-  confirmPassword: string;
+  password?: string;
+  confirmPassword?: string;
+  googleId: string;
+  refreshToken?: string;
+  accessToken?: string;
+  expiresIn?: number;
 }
 
-type IResponseAuthRegister = Either<Error, { account: Account; user: User }>;
+type IResponseAuthSignUpWithGoogle = Either<Error, { account: Account; user: User }>;
 
-export class AuthRegisterUseCase {
+export class AuthSignUpWithGoogleUseCase {
   constructor(
     private readonly accountRepository: IAccountRepository,
+    private readonly externalAuthRepository: IExternalAuthRepository,
     private readonly userRepository: IUserRepository,
     private readonly hashGenerator: HashGenerator
   ) {}
 
-  async execute(payload: IRequestAuthRegister): Promise<IResponseAuthRegister> {
+  async execute(payload: IRequestAuthSignUpWihGoogle): Promise<IResponseAuthSignUpWithGoogle> {
     try {
+      const userFoundByGoogleId = await this.externalAuthRepository.findByExternalId(payload.googleId, "google");
+
+      if (userFoundByGoogleId) {
+        return left(new EmailAlreadyExistsAuthRegisterError());
+      }
+
       const accountFoundByEmail = await this.accountRepository.findByEmail(payload.email);
 
       if (accountFoundByEmail) {
@@ -34,7 +45,13 @@ export class AuthRegisterUseCase {
         return left(new EmailAlreadyExistsAuthRegisterError());
       }
 
-      const passwordHash = await this.hashGenerator.hash(payload.password);
+      const password = payload.password ?? payload.googleId;
+
+      if (payload.password && payload.password !== payload.confirmPassword) {
+        return left(new PasswordsMustBeTheSameAccountError());
+      }
+
+      const passwordHash = await this.hashGenerator.hash(password);
 
       const newAccount = Account.create({
         email: payload.email,
@@ -64,6 +81,17 @@ export class AuthRegisterUseCase {
       );
 
       const accountUpdated = await this.accountRepository.update(updateAccount);
+
+      const externalAuth = ExternalAuth.create({
+        provider: "google",
+        providerUserId: payload.email,
+        userId: userCreated.userId,
+        accessToken: payload.accessToken ?? "",
+        refreshToken: payload.refreshToken ?? "",
+        expiresAt: payload.expiresIn ? new Date(Date.now() + payload.expiresIn * 1000) : undefined,
+      });
+
+      await this.externalAuthRepository.create(externalAuth);
 
       return right({ account: accountUpdated, user: userCreated });
     } catch (error) {

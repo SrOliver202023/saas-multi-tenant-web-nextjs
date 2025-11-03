@@ -1,9 +1,9 @@
-import { AuthRegisterController } from "@/backend/infra/controllers";
-import { AuthRegisterUseCaseFactory } from "@/backend/infra/factories";
-import { AuthRegisterZodValidation, HttpNextAdapter } from "@/shared";
+import { AuthSignUpController } from "@/backend/infra/controllers";
+import { AuthSignUpUseCaseFactory } from "@/backend/infra/factories";
+import { AuthSignUpZodValidation, HttpNextAdapter } from "@/shared";
 
 export async function POST(req: Request) {
-  const useCase = AuthRegisterUseCaseFactory.make();
-  const response = await new AuthRegisterController(useCase, AuthRegisterZodValidation).handle(req);
+  const useCase = AuthSignUpUseCaseFactory.make();
+  const response = await new AuthSignUpController(useCase, AuthSignUpZodValidation).handle(req);
   return HttpNextAdapter.from(response);
 }

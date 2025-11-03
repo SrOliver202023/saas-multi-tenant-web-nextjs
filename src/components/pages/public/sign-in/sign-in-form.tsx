@@ -12,6 +12,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IAuthSignInDto } from "@/backend/domain/dtos";
 import { authSignInZodSchema } from "@/shared";
+import { signIn } from "next-auth/react";
 
 export interface SignInFormProps {
   isLoading?: boolean;
@@ -36,9 +37,9 @@ export function SignInForm({ onSubmit }: SignInFormProps) {
           </Flex>
 
           <Flex flexDir="column">
-            <Heading size="3xl">Create account</Heading>
+            <Heading size="3xl">Login</Heading>
             <Text fontSize="lg" color="gray.400">
-              Create your account and enjoy all the features available in the free plan.
+              Access your account and continue enjoying all the features available in the free plan.
             </Text>
           </Flex>
         </Flex>
@@ -53,7 +54,7 @@ export function SignInForm({ onSubmit }: SignInFormProps) {
                   <Field.Root invalid={Boolean(form.formState.errors.identifier)}>
                     <Field.Label fontSize="md">E-mail</Field.Label>
                     <InputGroup startAddon={<GoMail className="w-5 h-5" />}>
-                      <Input size="md" fontSize="md" placeholder="jonh.doe@email.com" autoComplete="off" {...field} />
+                      <Input id="identifier" size="md" fontSize="md" placeholder="jonh.doe@email.com" autoComplete="off" {...field} />
                     </InputGroup>
                     <Field.ErrorText color={"red.500"} fontSize="sm">
                       {form.formState.errors.identifier?.message}
@@ -100,7 +101,18 @@ export function SignInForm({ onSubmit }: SignInFormProps) {
                 <Flex h="0.5" w="full" bg="gray.200" />
               </Flex>
 
-              <TouchButton w="full" hoverFilled="fromLeft" justifyContent="space-between" disabled>
+              <TouchButton
+                w="full"
+                hoverFilled="fromLeft"
+                justifyContent="space-between"
+                type="button"
+                onClick={() =>
+                  signIn("google", {
+                    callbackUrl: "/home",
+                    mode: "signIn",
+                  })
+                }
+              >
                 <Separator />
                 <Text fontWeight="normal" fontSize="md">
                   Sign In with Google
