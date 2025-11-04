@@ -32,9 +32,7 @@ export function TouchButton(props: TouchButtonProps) {
   useEffect(() => setMounted(true), []);
 
   const fill = useColorModeValue(props.fillColor ?? "primary.600", props.darkFillColor ?? props.fillColor ?? "primary.600");
-
   const hoverText = useColorModeValue(props.textHoverColor ?? "white", props.darkTextHoverColor ?? props.textHoverColor ?? "white");
-
   const normalText = useColorModeValue(props.textColor ?? fill, props.darkTextColor ?? props.textColor ?? fill);
 
   if (!mounted) {
@@ -49,7 +47,6 @@ export function TouchButton(props: TouchButtonProps) {
   const isBack = hoverFilled.startsWith("back");
   const shouldAnimate = hoverFilled !== "none";
 
-  // define transformações
   const initialTransform =
     hoverFilled === "fromTop" || hoverFilled === "fromBottom" || hoverFilled.includes("backFromTop") || hoverFilled.includes("backFromBottom")
       ? isBack
@@ -78,12 +75,11 @@ export function TouchButton(props: TouchButtonProps) {
     ? "bottom"
     : "center";
 
-  // 🧠 aqui está a mágica da inversão de cores
   const currentTextColor = isBack ? hoverText : normalText;
   const currentHoverColor = isBack ? normalText : hoverText;
 
   return (
-    <Ripple color={fill}>
+    <Ripple>
       <Button
         {...props}
         position="relative"
@@ -93,7 +89,9 @@ export function TouchButton(props: TouchButtonProps) {
         color={currentTextColor}
         fontWeight="bold"
         bg={isBack ? fill : "transparent"}
-        transition="color 0.3s ease, background-color 0.3s ease"
+        transition="all 0.3s ease"
+        outline="none"
+        zIndex={3} // garante que o button fique acima do ripple-layer
         _before={{
           content: '""',
           position: "absolute",
@@ -108,6 +106,19 @@ export function TouchButton(props: TouchButtonProps) {
           color: currentHoverColor,
           bg: isBack ? "transparent" : undefined,
           _before: shouldAnimate ? { transform: hoverTransform } : undefined,
+        }}
+        _focusVisible={{
+          // boxShadow: `0 0 0 4px rgba(59,130,246,0.32)`,
+          // boxShadow: `0 0 0 3px var(--chakra-colors-${fill.replace(".", "-")})`,
+          animation: "ringGlow 1.5s ease-in-out infinite alternate",
+          outline: "none",
+          boxShadow: "0 0 0 3px var(--chakra-colors-blue-400)",
+        }}
+        css={{
+          "@keyframes ringGlow": {
+            "0%": { boxShadow: `0 0 0 3px var(--chakra-colors-${fill.replace(".", "-")}, ${fill})` },
+            "100%": { boxShadow: `0 0 0 6px var(--chakra-colors-${fill.replace(".", "-")}, ${fill})` },
+          },
         }}
       >
         {props.children}

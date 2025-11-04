@@ -1,4 +1,4 @@
-import { defineSemanticTokens } from "@chakra-ui/react"
+import { defineSemanticTokens } from "@chakra-ui/react";
 
 export const colors = defineSemanticTokens.colors({
   bg: {
@@ -62,6 +62,12 @@ export const colors = defineSemanticTokens.colors({
         _dark: "{colors.blue.950}",
       },
     },
+    primary: {
+      value: {
+        _light: "{colors.primary.600}",
+        _dark: "{colors.primary.300}",
+      },
+    },
   },
   fg: {
     DEFAULT: {
@@ -110,6 +116,12 @@ export const colors = defineSemanticTokens.colors({
       value: {
         _light: "{colors.blue.600}",
         _dark: "{colors.blue.300}",
+      },
+    },
+    primary: {
+      value: {
+        _light: "{colors.primary.600}",
+        _dark: "{colors.primary.300}",
       },
     },
   },
@@ -609,4 +621,48 @@ export const colors = defineSemanticTokens.colors({
       },
     },
   },
-})
+  primary: {
+    contrast: {
+      value: {
+        _light: "{colors.whiteAlpha.0}",
+        _dark: "{colors.blackAlpha.0}",
+      },
+    },
+    fg: {
+      value: {
+        _light: "{colors.blue.500}",
+        _dark: "{colors.blue.300}",
+      },
+    },
+    subtle: {
+      value: {
+        _light: "{colors.blue.100}",
+        _dark: "{colors.blue.900}",
+      },
+    },
+    muted: {
+      value: {
+        _light: "{colors.blue.200}",
+        _dark: "{colors.blue.800}",
+      },
+    },
+    emphasized: {
+      value: {
+        _light: "{colors.blue.300}",
+        _dark: "{colors.blue.700}",
+      },
+    },
+    solid: {
+      value: {
+        _light: "{colors.blue.600}",
+        _dark: "{colors.blue.500}",
+      },
+    },
+    focusRing: {
+      value: {
+        _light: "{colors.blue.400}",
+        _dark: "{colors.blue.400}",
+      },
+    },
+  },
+});

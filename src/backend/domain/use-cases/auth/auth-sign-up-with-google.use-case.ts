@@ -84,7 +84,7 @@ export class AuthSignUpWithGoogleUseCase {
 
       const externalAuth = ExternalAuth.create({
         provider: "google",
-        providerUserId: payload.email,
+        providerUserId: payload.googleId,
         userId: userCreated.userId,
         accessToken: payload.accessToken ?? "",
         refreshToken: payload.refreshToken ?? "",

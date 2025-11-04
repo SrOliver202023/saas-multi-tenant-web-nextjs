@@ -123,7 +123,7 @@ export function SignInForm({ onSubmit }: SignInFormProps) {
               <Flex py="2" justifyContent="center" w="full" fontWeight="medium" gap="1">
                 <Text fontSize="md">{`Don't have an account yet?`}</Text>
                 <NextLink href="/register">
-                  <Text fontSize="md" color="primary">
+                  <Text fontSize="md" color="primary.500">
                     Sign up.
                   </Text>
                 </NextLink>

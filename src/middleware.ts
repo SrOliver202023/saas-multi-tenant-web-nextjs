@@ -19,8 +19,6 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   };
 
-  console.log(`isPublic: ${!!!isPublic} hasToken: ${!!token}`);
-
   // ✅ Usuário autenticado tentando acessar página pública → volta pra /home
   if (token && isPublic) {
     const callbackUrl = req.nextUrl.searchParams.get("callbackUrl");
@@ -29,7 +27,6 @@ export async function middleware(req: NextRequest) {
 
   // 🚫 Usuário não autenticado tentando acessar página privada → manda pra /login
   if (!!!token && !!!isPublic) {
-    console.log("deu_merda");
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("callbackUrl", pathname + (search || ""));
@@ -41,13 +38,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    // 🔒 Intercepta tudo, exceto:
-    // - rotas estáticas (_next)
-    // - imagens
-    // - favicon
-    // - assets públicos
-    // - endpoints internos do NextAuth
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|assets|.*\\.(?:svg|png|jpg|jpeg|gif|webp)).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|assets|.*\\.(?:svg|png|jpg|jpeg|gif|webp)).*)"],
 };

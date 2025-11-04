@@ -5,6 +5,7 @@ import "../../app/globals.css";
 import { Provider } from "../ui/provider";
 import { Toaster } from "../ui/toaster";
 import { SessionProvider } from "next-auth/react";
+import { AuthenticatedLayout } from "./authenticated-layout";
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -18,7 +19,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       <SessionProvider>
         <Provider enableSystem defaultTheme="light">
           <Toaster />
-          {children}
+          <AuthenticatedLayout>{children}</AuthenticatedLayout>
         </Provider>
       </SessionProvider>
     </QueryClientProvider>

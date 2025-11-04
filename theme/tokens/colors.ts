@@ -1,4 +1,4 @@
-import { defineTokens } from "@chakra-ui/react"
+import { defineTokens } from "@chakra-ui/react";
 
 export const colors = defineTokens.colors({
   transparent: {
@@ -433,4 +433,18 @@ export const colors = defineTokens.colors({
       value: "#2c0514",
     },
   },
-})
+  primary: {
+    DEFAULT: { value: "oklch(0.391 0.09 240.876)" },
+    "50": { value: "oklch(0.977 0.013 236.62)" },
+    "100": { value: "oklch(0.951 0.026 236.824)" },
+    "200": { value: "oklch(0.901 0.058 230.902)" },
+    "300": { value: "oklch(0.828 0.111 230.318)" },
+    "400": { value: "oklch(0.746 0.16 232.661)" },
+    "500": { value: "oklch(0.685 0.169 237.323)" },
+    "600": { value: "oklch(0.588 0.158 241.966)" },
+    "700": { value: "oklch(0.5 0.134 242.749)" },
+    "800": { value: "oklch(0.443 0.11 240.79)" },
+    "900": { value: "oklch(0.391 0.09 240.876)" },
+    "950": { value: "oklch(0.293 0.066 243.157)" },
+  },
+});
